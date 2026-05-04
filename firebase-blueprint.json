@@ -1,0 +1,59 @@
+{
+  "entities": {
+    "Log": {
+      "title": "IT Log Entry",
+      "description": "A record of an IT asset transaction (loan, repair, replacement, etc.)",
+      "type": "object",
+      "properties": {
+        "studentName": { "type": "string", "description": "Full name of the student" },
+        "studentEmail": { "type": "string", "format": "email", "description": "School email of the student" },
+        "gradeLevel": { "type": "string", "enum": ["9", "10", "11", "12", "Staff"], "description": "Grade level of the student" },
+        "categoryId": { "type": "string", "description": "ID of the category (chromebook, charger, yondr, etc.)" },
+        "categoryName": { "type": "string", "description": "Display name of the category" },
+        "actionType": { "type": "string", "description": "Type of action (Loaned, Repaired, Replaced, Returned, etc.)" },
+        "issueType": { "type": "string", "description": "Specific issue (Screen, Battery, Lost, etc.)" },
+        "status": { "type": "string", "description": "Current status of the item/request" },
+        "notes": { "type": "string", "description": "Additional details" },
+        "timestamp": { "type": "string", "format": "date-time", "description": "When the log was created" },
+        "adminId": { "type": "string", "description": "UID of the admin who processed it" }
+      },
+      "required": ["studentName", "categoryId", "actionType", "timestamp"]
+    },
+    "Category": {
+      "title": "Asset Category",
+      "description": "Defines a type of item that can be tracked",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "Display name (e.g., Chromebook)" },
+        "description": { "type": "string" },
+        "actions": { "type": "array", "description": "List of allowed action types" },
+        "issues": { "type": "array", "description": "List of allowed issue types" },
+        "active": { "type": "boolean" }
+      },
+      "required": ["name", "actions"]
+    },
+    "AppSetting": {
+      "title": "Application Setting",
+      "description": "Global configuration for the app",
+      "type": "object",
+      "properties": {
+        "key": { "type": "string" },
+        "value": { "type": "object" }
+      }
+    }
+  },
+  "firestore": {
+    "/logs/{logId}": {
+      "schema": "Log",
+      "description": "Collection of all IT transactions"
+    },
+    "/categories/{categoryId}": {
+      "schema": "Category",
+      "description": "Configurable asset categories"
+    },
+    "/settings/{settingId}": {
+      "schema": "AppSetting",
+      "description": "Global app configurations"
+    }
+  }
+}

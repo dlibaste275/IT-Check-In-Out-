@@ -1,0 +1,57 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      // In a real app, we'd check a user document or custom claim.
+      // For this implementation, we'll allow all authenticated school users to read/write settings and categories,
+      // and restrict logs based on owner or admin status if needed.
+      // Given it's an internal school IT tool, we'll start with isSignedIn() for simplicity
+      // but keep the structure for hardening.
+      return isSignedIn();
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidLog(data) {
+      return data.studentName is string && data.studentName.size() > 0 &&
+             data.categoryId is string &&
+             data.actionType is string &&
+             data.timestamp is timestamp;
+    }
+
+    match /logs/{logId} {
+      allow read: if isAdmin();
+      allow create: if true; // Allow kiosk creation without login
+      allow update, delete: if isAdmin();
+    }
+
+    match /categories/{categoryId} {
+      allow read: if true; // Allow public reading for the kiosk
+      allow write: if isAdmin();
+    }
+
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+  }
+}
